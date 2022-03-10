@@ -79,6 +79,12 @@ async function getOnePageData (page, form) {
     promises.push(promise)
   }
   await Promise.all(promises)
+
+  const sort = {
+    type: 'PP',
+    order: 'DESC'
+  }
+  service.sort(data, sort)
 }
 
 async function handlePlayerScore (playerScore, form) {

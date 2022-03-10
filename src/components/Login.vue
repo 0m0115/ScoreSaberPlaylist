@@ -31,7 +31,7 @@ function login () {
 
         <div>
           <h1>Score Saber Playlist</h1>
-          <h3>Version 1.1.3</h3>
+          <h3>Version 1.1.4</h3>
         </div>
 
         <a-input-search
