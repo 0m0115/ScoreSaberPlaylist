@@ -1,9 +1,20 @@
 <script setup>
-import { reactive, defineEmits } from 'vue'
+import { reactive, defineEmits, defineProps, watch } from 'vue'
+
+const props = defineProps({
+  loading: Boolean
+})
 
 const sort = reactive({
   type: 'PP',
   order: 'DESC'
+})
+
+watch(() => props.loading, (newValue, oldValue) => {
+  if (newValue) {
+    sort.type = 'PP'
+    sort.order = 'DESC'
+  }
 })
 
 const sortTypeOptions = reactive([
@@ -46,24 +57,24 @@ function handleChange () {
 </script>
 
 <template>
-    <a-space>
-      按
-      <a-select
-        ref="select"
-        size="small"
-        v-model:value="sort.type"
-        style="width: 120px"
-        :options="sortTypeOptions"
-        @change="handleChange"
-      />
+  <a-space>
+    按
+    <a-select
+      ref="select"
+      size="small"
+      v-model:value="sort.type"
+      style="width: 120px"
+      :options="sortTypeOptions"
+      @change="handleChange"
+    />
 
-      <a-select
-        ref="select"
-        size="small"
-        v-model:value="sort.order"
-        style="width: 120px"
-        :options="sortOrderOptions"
-        @change="handleChange"
-      />排序
-    </a-space>
+    <a-select
+      ref="select"
+      size="small"
+      v-model:value="sort.order"
+      style="width: 120px"
+      :options="sortOrderOptions"
+      @change="handleChange"
+    />排序
+  </a-space>
 </template>
