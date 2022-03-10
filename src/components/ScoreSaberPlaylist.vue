@@ -81,7 +81,7 @@ async function getOnePageData (page, form) {
   await Promise.all(promises)
 
   const sort = {
-    type: 'PP',
+    type: 'pp',
     order: 'DESC'
   }
   service.sort(data, sort)

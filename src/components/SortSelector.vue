@@ -6,13 +6,13 @@ const props = defineProps({
 })
 
 const sort = reactive({
-  type: 'PP',
+  type: 'pp',
   order: 'DESC'
 })
 
 watch(() => props.loading, (newValue, oldValue) => {
   if (newValue) {
-    sort.type = 'PP'
+    sort.type = 'pp'
     sort.order = 'DESC'
   }
 })
