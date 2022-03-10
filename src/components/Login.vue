@@ -29,6 +29,11 @@ function login () {
       <div class="login-content">
         <a-image :width="128" :preview="false" src="https://scoresaber.com/images/logo.svg" />
 
+        <div>
+          <h1>Score Saber Playlist</h1>
+          <h3>Version 1.1.2</h3>
+        </div>
+
         <a-input-search
           v-model:value="playerId"
           placeholder="请输入Score Saber账号"
