@@ -10,6 +10,8 @@ import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import service from '../utils/service'
 
+const limit = 100
+
 const playerInfo = reactive({})
 const data = reactive([])
 const totalPage = ref(0)
@@ -30,7 +32,7 @@ function initPlayerInfo (playerId) {
       playerInfo.profilePicture = info.profilePicture
       playerInfo.pp = info.pp
       playerInfo.rank = info.rank
-      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / 100)
+      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / limit)
     })
     .catch(e => {
       message.error('查询用户信息失败')
@@ -69,11 +71,14 @@ async function getData (form) {
 }
 
 async function getOnePageData (page, form) {
-  const playerScores = await http.getScores(playerInfo?.id, page)
+  const playerScores = await http.getScores(playerInfo?.id, page, limit)
 
+  const promises = []
   for (const playerScore of playerScores) {
-    await handlePlayerScore(playerScore, form)
+    const promise = handlePlayerScore(playerScore, form)
+    promises.push(promise)
   }
+  await Promise.all(promises)
 }
 
 async function handlePlayerScore (playerScore, form) {

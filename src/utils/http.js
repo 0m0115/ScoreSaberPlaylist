@@ -9,7 +9,7 @@ export default {
   getPlayerInfo (playerId) {
     return get(`https://scoresaber.com/api/player/${playerId}/full`)
   },
-  getScores (playerId, page, sort = 'top', limit = 100) {
+  getScores (playerId, page, limit = 100, sort = 'top') {
     return get(`https://scoresaber.com/api/player/${playerId}/scores?page=${page}&sort=${sort}&limit=${limit}&withMetadata=false`)
       .then(data => data.playerScores)
   },
