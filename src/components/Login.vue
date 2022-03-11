@@ -10,6 +10,9 @@ const router = useRouter()
 
 function login () {
   loading.value = true
+  
+  let matchResult=/scoresaber.com\/u\/(\S+)/.exec(playerId.value);
+  if(matchResult&&matchResult[1])playerId.value=matchResult[1]
 
   http.getPlayerInfo(playerId.value)
     .then(info => {
@@ -31,7 +34,7 @@ function login () {
 
         <a-input-search
           v-model:value="playerId"
-          placeholder="请输入Score Saber账号"
+          placeholder="请输入Score Saber账号或Score Saber主页网址"
           enter-button="确定"
           size="large"
           allow-clear
