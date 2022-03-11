@@ -10,6 +10,8 @@ import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import service from '../utils/service'
 
+const limit = 100
+
 const playerInfo = reactive({})
 const data = reactive([])
 const totalPage = ref(0)
@@ -30,7 +32,7 @@ function initPlayerInfo (playerId) {
       playerInfo.profilePicture = info.profilePicture
       playerInfo.pp = info.pp
       playerInfo.rank = info.rank
-      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / 100)
+      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / limit)
     })
     .catch(e => {
       message.error('查询用户信息失败')
@@ -57,38 +59,59 @@ async function getData (form) {
 
   console.time('查询数据耗时')
 
+  const promises = []
   for (let page = 1; page <= totalPage.value; page++) {
-    const playerScores = await http.getScores(playerInfo?.id, page)
-    for (const playerScore of playerScores) {
-      const score = playerScore.score
-      const leaderboard = playerScore.leaderboard
-      const item = {
-        id: leaderboard.id,
-        rank: score.rank,
-        baseScore: score.baseScore,
-        maxScore: leaderboard.maxScore,
-        pp: score.pp,
-        ppWeighted: score.pp * score.weight,
-        fullCombo: score.fullCombo,
-        timeSet: dayjs(score.timeSet),
-        songHash: leaderboard.songHash,
-        songName: leaderboard.songName,
-        songSubName: leaderboard.songSubName,
-        songAuthorName: leaderboard.songAuthorName,
-        levelAuthorName: leaderboard.levelAuthorName,
-        difficultyRaw: leaderboard.difficulty.difficultyRaw,
-        ranked: leaderboard.ranked,
-        stars: leaderboard.stars,
-        coverImage: leaderboard.coverImage
-      }
-      if (await filter.dataFilter(item, form)) {
-        data.push(item)
-      }
-    }
+    const promise = getOnePageData(page, form)
+    promises.push(promise)
   }
+  await Promise.all(promises)
 
   console.timeEnd('查询数据耗时')
   loading.value = false
+}
+
+async function getOnePageData (page, form) {
+  const playerScores = await http.getScores(playerInfo?.id, page, limit)
+
+  const promises = []
+  for (const playerScore of playerScores) {
+    const promise = handlePlayerScore(playerScore, form)
+    promises.push(promise)
+  }
+  await Promise.all(promises)
+
+  const sort = {
+    type: 'pp',
+    order: 'DESC'
+  }
+  service.sort(data, sort)
+}
+
+async function handlePlayerScore (playerScore, form) {
+  const score = playerScore.score
+  const leaderboard = playerScore.leaderboard
+  const item = {
+    id: leaderboard.id,
+    rank: score.rank,
+    baseScore: score.baseScore,
+    maxScore: leaderboard.maxScore,
+    pp: score.pp,
+    ppWeighted: score.pp * score.weight,
+    fullCombo: score.fullCombo,
+    timeSet: dayjs(score.timeSet),
+    songHash: leaderboard.songHash,
+    songName: leaderboard.songName,
+    songSubName: leaderboard.songSubName,
+    songAuthorName: leaderboard.songAuthorName,
+    levelAuthorName: leaderboard.levelAuthorName,
+    difficultyRaw: leaderboard.difficulty.difficultyRaw,
+    ranked: leaderboard.ranked,
+    stars: leaderboard.stars,
+    coverImage: leaderboard.coverImage
+  }
+  if (await filter.dataFilter(item, form)) {
+    data.push(item)
+  }
 }
 
 async function downloadPlaylist (playlistTitle) {

@@ -45,7 +45,7 @@ function sort (sort) {
       <a-spin :spinning="loading" size="large">
         <a-card hoverable v-if="loading || data?.length">
           <a-space size="large">
-            <SortSelector @change="sort" />
+            <SortSelector :loading="loading" @change="sort" />
 
             <a-button
               type="primary"
