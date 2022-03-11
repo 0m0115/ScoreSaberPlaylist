@@ -10,9 +10,9 @@ const router = useRouter()
 
 function login () {
   loading.value = true
-  
-  let matchResult=/scoresaber.com\/u\/(\S+)/.exec(playerId.value);
-  if(matchResult&&matchResult[1])playerId.value=matchResult[1]
+
+  const matchResult = /scoresaber.com\/u\/(\S+)/.exec(playerId.value)
+  if (matchResult && matchResult[1]) playerId.value = matchResult[1]
 
   http.getPlayerInfo(playerId.value)
     .then(info => {
@@ -34,7 +34,7 @@ function login () {
 
         <div>
           <h1>Score Saber Playlist</h1>
-          <h3>Version 1.1.4</h3>
+          <h3>Version 1.1.5</h3>
         </div>
 
         <a-input-search
@@ -64,7 +64,7 @@ function login () {
 }
 
 .login-content {
-  width: 500px;
+  width: 600px;
   display: grid;
   grid-template-rows: auto;
   justify-items: center;
