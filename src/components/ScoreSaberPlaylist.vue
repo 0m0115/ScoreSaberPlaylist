@@ -145,17 +145,19 @@ async function downloadPlaylist (playlistTitle) {
 </script>
 
 <template>
-  <a-row justify="space-between" align="top" class="main-layout">
-    <a-col :span="7" class="main-layout-sider">
-      <PlayerInfoCard :player-info="playerInfo" />
+  <a-spin :spinning="playerInfo?.id === undefined" size="large">
+    <a-row justify="space-between" align="top" class="main-layout">
+      <a-col :span="7" class="main-layout-sider">
+        <PlayerInfoCard :player-info="playerInfo" />
 
-      <FormCard @submit="onSubmit" :loading="loading" />
-    </a-col>
+        <FormCard @submit="onSubmit" :loading="loading" />
+      </a-col>
 
-    <a-col :span="17">
-      <DataList :data="data" :loading="loading" @download="downloadPlaylist" />
-    </a-col>
-  </a-row>
+      <a-col :span="17">
+        <DataList :data="data" :loading="loading" @download="downloadPlaylist" />
+      </a-col>
+    </a-row>
+  </a-spin>
 </template>
 
 <style scoped>
