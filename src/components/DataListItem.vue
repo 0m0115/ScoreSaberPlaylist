@@ -1,21 +1,18 @@
 <script setup>
-import { defineProps, computed, ref, watchEffect } from 'vue'
+import { defineProps, computed, ref } from 'vue'
 import { CopyFilled, CloudDownloadOutlined, DownloadOutlined } from '@ant-design/icons-vue'
 import http from '../utils/http'
 import { message } from 'ant-design-vue'
+import useClipboard from 'vue-clipboard3'
+
+const { toClipboard } = useClipboard()
 
 const props = defineProps({
   item: Object
 })
 
-const key = ref(0)
-const mapperId = ref(0)
-
-watchEffect(async () => {
-  const songInfo = await http.getSongInfo(props.item.songHash)
-  key.value = songInfo?.id
-  mapperId.value = songInfo?.uploader?.id
-})
+const key = ref(props.item?.key)
+const mapperId = ref(props.item?.mapperId)
 
 const diffTextMap = new Map([
   ['_Easy_SoloStandard', 'E'],
@@ -41,38 +38,60 @@ const diffColor = computed(() => {
   return diffColorMap.get(props.item.difficultyRaw) ?? 'yellow'
 })
 
-function openBeatSaver () {
-  if (!key.value) {
-    message.error('跳转失败')
+async function getSongInfo () {
+  if (key.value && mapperId.value) {
     return
   }
-  window.open(`https://beatsaver.com/maps/${key.value}`, '_blank')
+
+  return http.getSongInfo(props.item.songHash)
+    .then(songInfo => {
+      key.value = songInfo?.id
+      mapperId.value = songInfo?.uploader?.id
+    })
+    .catch(e => {
+      message.error('BeatSaver谱面信息获取失败')
+    })
 }
 
-function openMapperProfile () {
-  if (!mapperId.value) {
-    message.error('跳转失败')
-    return
+async function openBeatSaver () {
+  await getSongInfo()
+
+  if (key.value) {
+    window.open(`https://beatsaver.com/maps/${key.value}`, '_blank')
   }
-  window.open(`https://beatsaver.com/profile/${mapperId.value}`, '_blank')
 }
 
-const onCopy = (e) => {
-  message.success('复制成功: ' + e.text)
-}
-const onError = (e) => {
-  message.error('复制失败')
-}
+async function openMapperProfile () {
+  await getSongInfo()
 
-function oneClick () {
-  if (!key.value) {
-    message.error('下载失败')
-    return
+  if (mapperId.value) {
+    window.open(`https://beatsaver.com/profile/${mapperId.value}`, '_blank')
   }
-  window.open(`beatsaver://${key.value}`, '_blank')
 }
 
-function downlocadZip () {
+async function copy () {
+  await getSongInfo()
+
+  if (key.value) {
+    const bsrKey = `!bsr ${key.value}`
+    try {
+      await toClipboard(bsrKey)
+      message.success('复制成功: ' + bsrKey)
+    } catch {
+      message.error('复制失败')
+    }
+  }
+}
+
+async function oneClick () {
+  await getSongInfo()
+
+  if (key.value) {
+    window.open(`beatsaver://${key.value}`, '_blank')
+  }
+}
+
+function downloadZip () {
   window.open(`https://na.cdn.beatsaver.com/${props.item.songHash.toLowerCase()}.zip`, '_blank')
 }
 </script>
@@ -116,7 +135,7 @@ function downlocadZip () {
           <a-col :span="8">
             <a-row justify="end">
               <a-space>
-                <span class="text-bolder">{{item.timeSet.format('YYYY.MM.DD')}}</span>
+                <span class="text-bolder">{{ item.timeSet.format('YYYY.MM.DD') }}</span>
 
                 <a-button v-if="item.acc != -Infinity" type="primary" ghost shape="round">
                   <span class="text-bolder">{{ item.acc.toFixed(2) }}%</span>
@@ -135,13 +154,7 @@ function downlocadZip () {
                     <span>Copy BSR</span>
                   </template>
 
-                  <a-button
-                    type="primary"
-                    shape="circle"
-                    v-clipboard:copy="`!bsr ${key}`"
-                    v-clipboard:success="onCopy"
-                    v-clipboard:error="onError"
-                  >
+                  <a-button type="primary" shape="circle" @click="copy">
                     <template #icon>
                       <copy-filled />
                     </template>
@@ -162,10 +175,10 @@ function downlocadZip () {
 
                 <a-tooltip placement="bottom">
                   <template #title>
-                    <span>Downlocad zip</span>
+                    <span>Download zip</span>
                   </template>
 
-                  <a-button type="primary" shape="circle" @click="downlocadZip">
+                  <a-button type="primary" shape="circle" @click="downloadZip">
                     <template #icon>
                       <download-outlined />
                     </template>

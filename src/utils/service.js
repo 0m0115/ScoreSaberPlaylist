@@ -24,7 +24,7 @@ async function getAcc (item) {
   try {
     leaderBoardInfo = await http.getLeaderBoardInfo(item.id)
   } catch {
-    return 0
+    return -Infinity
   }
 
   const diffIndex = leaderBoardInfo.difficulties.findIndex(d => d.leaderboardId === item.id)
@@ -37,10 +37,13 @@ async function getAcc (item) {
   try {
     songInfo = await http.getSongInfo(item.songHash)
   } catch {
-    return 0
+    return -Infinity
   }
 
   const diff = songInfo?.versions?.[0]?.diffs[diffIndex]
+
+  item.key = songInfo?.id
+  item.mapperId = songInfo?.uploader?.id
 
   if (!diff) {
     return -Infinity
