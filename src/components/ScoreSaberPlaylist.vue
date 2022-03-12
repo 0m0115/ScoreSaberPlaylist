@@ -9,8 +9,11 @@ import DataList from './DataList.vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import service from '../utils/service'
+import pLimit from 'p-limit'
 
-const limit = 100
+const pageSize = 100
+const limit = pLimit(7)
+const dataAll = []
 
 const playerInfo = reactive({})
 const data = reactive([])
@@ -32,7 +35,7 @@ function initPlayerInfo (playerId) {
       playerInfo.profilePicture = info.profilePicture
       playerInfo.pp = info.pp
       playerInfo.rank = info.rank
-      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / limit)
+      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / pageSize)
     })
     .catch(e => {
       message.error('查询用户信息失败')
@@ -41,10 +44,6 @@ function initPlayerInfo (playerId) {
 }
 
 async function onSubmit (form) {
-  await getData(form)
-}
-
-async function getData (form) {
   if (loading.value) {
     return
   }
@@ -57,7 +56,31 @@ async function getData (form) {
   loading.value = true
   data.length = 0
 
+  console.time('总耗时')
+
   console.time('查询数据耗时')
+  await getData(form)
+  console.timeEnd('查询数据耗时')
+
+  console.time('处理数据耗时')
+  await handleData(form)
+  console.timeEnd('处理数据耗时')
+
+  console.timeEnd('总耗时')
+
+  const sort = {
+    type: 'pp',
+    order: 'DESC'
+  }
+  service.sort(data, sort)
+
+  loading.value = false
+}
+
+async function getData (form) {
+  if (dataAll?.length) {
+    return
+  }
 
   const promises = []
   for (let page = 1; page <= totalPage.value; page++) {
@@ -65,29 +88,17 @@ async function getData (form) {
     promises.push(promise)
   }
   await Promise.all(promises)
-
-  console.timeEnd('查询数据耗时')
-  loading.value = false
 }
 
-async function getOnePageData (page, form) {
-  const playerScores = await http.getScores(playerInfo?.id, page, limit)
+async function getOnePageData (page) {
+  const playerScores = await http.getScores(playerInfo?.id, page, pageSize)
 
-  const promises = []
   for (const playerScore of playerScores) {
-    const promise = handlePlayerScore(playerScore, form)
-    promises.push(promise)
+    handlePlayerScore(playerScore)
   }
-  await Promise.all(promises)
-
-  const sort = {
-    type: 'pp',
-    order: 'DESC'
-  }
-  service.sort(data, sort)
 }
 
-async function handlePlayerScore (playerScore, form) {
+function handlePlayerScore (playerScore) {
   const score = playerScore.score
   const leaderboard = playerScore.leaderboard
   const item = {
@@ -109,6 +120,19 @@ async function handlePlayerScore (playerScore, form) {
     stars: leaderboard.stars,
     coverImage: leaderboard.coverImage
   }
+  dataAll.push(item)
+}
+
+async function handleData (form) {
+  const promises = []
+  for (const item of dataAll) {
+    const promise = limit(() => handleOneItem(item, form))
+    promises.push(promise)
+  }
+  await Promise.all(promises)
+}
+
+async function handleOneItem (item, form) {
   if (await filter.dataFilter(item, form)) {
     data.push(item)
   }

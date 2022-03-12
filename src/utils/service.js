@@ -12,6 +12,10 @@ function sort (data, sort) {
 }
 
 async function getAcc (item) {
+  if (item.acc !== undefined && item.acc !== -Infinity) {
+    return item.acc
+  }
+
   if (!item.baseScore) {
     return 0
   }
