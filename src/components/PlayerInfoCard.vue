@@ -20,19 +20,19 @@ function openScoreSaberRankings () {
   <a-card>
     <a-card-meta>
       <template #avatar>
-        <a-avatar :size="64" :src="playerInfo.profilePicture" />
+        <a-avatar :size="64" :src="playerInfo.avatar" />
       </template>
 
       <template #title>
-          <a-button
-            type="primary"
-            size="large"
-            shape="round"
-            block
-            ghost
-            class="player-info-text"
-            @click="openScoreSaber"
-          >{{ playerInfo.name }}</a-button>
+        <a-button
+          type="primary"
+          size="large"
+          shape="round"
+          block
+          ghost
+          class="player-info-text"
+          @click="openScoreSaber"
+        >{{ playerInfo.name }}</a-button>
       </template>
 
       <template #description>

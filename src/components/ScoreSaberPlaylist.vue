@@ -10,6 +10,7 @@ import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import service from '../utils/service'
 import pLimit from 'p-limit'
+import storage from '../utils/storage'
 
 const pageSize = 100
 const limit = pLimit(7)
@@ -32,12 +33,21 @@ function initPlayerInfo (playerId) {
     .then(info => {
       playerInfo.id = info.id
       playerInfo.name = info.name
-      playerInfo.profilePicture = info.profilePicture
+      playerInfo.avatar = info.profilePicture
       playerInfo.pp = info.pp
       playerInfo.rank = info.rank
       totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / pageSize)
+
+      const playersMap = storage.getMap(storage.keys.players)
+      playersMap.set(info.id, {
+        id: info.id,
+        name: info.name,
+        avatar: info.profilePicture
+      })
+      storage.setMap(storage.keys.players, playersMap)
     })
     .catch(e => {
+      console.error(e)
       message.error('查询用户信息失败')
       router.push('/')
     })
