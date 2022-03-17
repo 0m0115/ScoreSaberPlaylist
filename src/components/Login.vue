@@ -49,7 +49,7 @@ const avatarMaxStyle = {
 
         <div>
           <h1>Score Saber Playlist</h1>
-          <h3>Version 1.1.9</h3>
+          <h3>Version 1.2.0</h3>
         </div>
 
         <a-avatar-group

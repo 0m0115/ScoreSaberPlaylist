@@ -48,7 +48,7 @@ function initPlayerInfo (playerId) {
     })
     .catch(e => {
       console.error(e)
-      message.error('查询用户信息失败')
+      message.error('用户信息查询失败')
       router.push('/')
     })
 }
@@ -59,7 +59,8 @@ async function onSubmit (form) {
   }
 
   if (!playerInfo?.id) {
-    message.error('请输入ScoreSaber账号')
+    message.error('用户信息查询失败')
+    router.push('/')
     return
   }
 
@@ -101,10 +102,14 @@ async function getData (form) {
 }
 
 async function getOnePageData (page) {
-  const playerScores = await http.getScores(playerInfo?.id, page, pageSize)
-
-  for (const playerScore of playerScores) {
-    handlePlayerScore(playerScore)
+  try {
+    const playerScores = await http.getScores(playerInfo?.id, page, pageSize)
+    for (const playerScore of playerScores) {
+      handlePlayerScore(playerScore)
+    }
+  } catch (e) {
+    console.error(e)
+    message.error('ScoreSaber记录查询异常')
   }
 }
 
