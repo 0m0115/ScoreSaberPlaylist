@@ -5,6 +5,7 @@ import http from '../utils/http'
 import storage from '../utils/storage'
 import { message } from 'ant-design-vue'
 import { UserOutlined } from '@ant-design/icons-vue'
+import config from '../utils/config'
 
 const playerId = ref('')
 const loading = ref(false)
@@ -49,7 +50,7 @@ const avatarMaxStyle = {
 
         <div>
           <h1>Score Saber Playlist</h1>
-          <h3>Version 1.2.1</h3>
+          <h3>Version {{ config.version }}</h3>
         </div>
 
         <a-avatar-group
