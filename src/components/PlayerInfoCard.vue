@@ -20,7 +20,12 @@ function openScoreSaberRankings () {
   <a-card>
     <a-card-meta>
       <template #avatar>
-        <a-avatar :size="64" :src="playerInfo.avatar" />
+        <a-avatar
+          :size="64"
+          :src="playerInfo.avatar"
+          @click="openScoreSaber"
+          class="cursor-pointer"
+        />
       </template>
 
       <template #title>
@@ -79,5 +84,9 @@ function openScoreSaberRankings () {
 .player-info-text {
   font-weight: bolder;
   font-size: 18px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
