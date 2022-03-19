@@ -72,7 +72,7 @@ async function onSubmit (form) {
   console.time('总耗时')
 
   console.time('查询玩家记录耗时')
-  await getData(form)
+  await getData()
   console.timeEnd('查询玩家记录耗时')
 
   console.time('查询比较对象记录耗时')
@@ -84,6 +84,7 @@ async function onSubmit (form) {
   console.timeEnd('处理数据耗时')
 
   console.timeEnd('总耗时')
+  console.log('------------------------------')
 
   const sort = {
     type: 'pp',
@@ -111,36 +112,42 @@ async function getCompetitorData (form) {
 
   const totalPage = Math.ceil(form.competitor.totalPlayCount / config.pageSize)
 
-  for (let page = 1; page <= totalPage; page++) {
-    const playerScores = await http.getScores(id, page)
-
-    for (const playerScore of playerScores) {
-      const id = playerScore.leaderboard.id
-      const baseScore = playerScore.score.baseScore
-      competitorMap.set(id, baseScore)
-    }
+  const callback = (playerScore) => {
+    const id = playerScore.leaderboard.id
+    const baseScore = playerScore.score.baseScore
+    competitorMap.set(id, baseScore)
   }
+
+  await getDataAllPage(id, totalPage, callback)
 }
 
-async function getData (form) {
+async function getData () {
   if (dataAll?.length) {
     return
   }
 
+  const callback = (playerScore) => {
+    const item = service.playerScoreToItem(playerScore)
+    dataAll.push(item)
+  }
+
+  await getDataAllPage(playerInfo?.id, totalPage.value, callback)
+}
+
+async function getDataAllPage (id, totalPage, callback) {
   const promises = []
-  for (let page = 1; page <= totalPage.value; page++) {
-    const promise = getOnePageData(page, form)
+  for (let page = 1; page <= totalPage; page++) {
+    const promise = getOnePageData(id, page, callback)
     promises.push(promise)
   }
   await Promise.all(promises)
 }
 
-async function getOnePageData (page) {
+async function getOnePageData (id, page, callback) {
   try {
-    const playerScores = await http.getScores(playerInfo?.id, page)
+    const playerScores = await http.getScores(id, page)
     for (const playerScore of playerScores) {
-      const item = service.playerScoreToItem(playerScore)
-      dataAll.push(item)
+      callback(playerScore)
     }
   } catch (e) {
     console.error(e)
