@@ -57,14 +57,35 @@ function starsFilter (item, form) {
   return item.stars >= starsMin && item.stars <= starsMax
 }
 
+function pkFilter (item, form, competitorMap) {
+  if (!form.competitor.enable || !form.competitor.id) {
+    return true
+  }
+
+  const competitorScore = competitorMap.get(item.id)
+
+  if (!competitorScore) {
+    return false
+  }
+
+  item.competitorAcc = (item.acc !== undefined && item.acc > 0) ? competitorScore / item.maxScore * 100 : undefined
+
+  if (form.competitor.type === 'All') {
+    return true
+  }
+
+  return form.competitor.type === 'Lower' ? item.baseScore <= competitorScore : item.baseScore >= competitorScore
+}
+
 export default {
-  async dataFilter (item, form) {
+  async dataFilter (item, form, competitorMap) {
     return rankedFilter(item, form) &&
       fullComboFilter(item, form) &&
       dateFilter(item, form) &&
       rankFilter(item, form) &&
       ppFilter(item, form) &&
       starsFilter(item, form) &&
-      (await accFilter(item, form))
+      (await accFilter(item, form)) &&
+      pkFilter(item, form, competitorMap)
   }
 }

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import config from './config'
 
 function get (url) {
   return axios.get(url)
@@ -9,7 +10,7 @@ export default {
   getPlayerInfo (playerId) {
     return get(`https://scoresaber.com/api/player/${playerId}/full`)
   },
-  getScores (playerId, page, limit = 100, sort = 'top') {
+  getScores (playerId, page, limit = config.pageSize, sort = 'top') {
     return get(`https://scoresaber.com/api/player/${playerId}/scores?page=${page}&sort=${sort}&limit=${limit}&withMetadata=false`)
       .then(data => data.playerScores)
   },

@@ -1,5 +1,6 @@
 
 import http from '../utils/http'
+import dayjs from 'dayjs'
 
 function sort (data, sort) {
   const { type, order } = sort
@@ -101,8 +102,39 @@ async function downloadPlaylist (data, playlistTitle) {
   http.downloadFile(playlistURL, `${playlistTitle}.bplist`)
 }
 
+function playerScoreToItem (playerScore) {
+  const score = playerScore.score
+  const leaderboard = playerScore.leaderboard
+  return {
+    id: leaderboard.id,
+    rank: score.rank,
+    baseScore: score.baseScore,
+    maxScore: leaderboard.maxScore,
+    pp: score.pp,
+    ppWeighted: score.pp * score.weight,
+    fullCombo: score.fullCombo,
+    timeSet: dayjs(score.timeSet),
+    songHash: leaderboard.songHash,
+    songName: leaderboard.songName,
+    songSubName: leaderboard.songSubName,
+    songAuthorName: leaderboard.songAuthorName,
+    levelAuthorName: leaderboard.levelAuthorName,
+    difficultyRaw: leaderboard.difficulty.difficultyRaw,
+    ranked: leaderboard.ranked,
+    stars: leaderboard.stars,
+    coverImage: leaderboard.coverImage
+  }
+}
+
+function matchPlayerId (str) {
+  const matchResult = /scoresaber.com\/u\/(\S+)/.exec(str)
+  return matchResult?.[1] ? matchResult[1] : str
+}
+
 export default {
   sort,
   getAcc,
-  downloadPlaylist
+  downloadPlaylist,
+  playerScoreToItem,
+  matchPlayerId
 }

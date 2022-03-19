@@ -7,14 +7,16 @@ import PlayerInfoCard from './PlayerInfoCard.vue'
 import FormCard from './FormCard.vue'
 import DataList from './DataList.vue'
 import { message } from 'ant-design-vue'
-import dayjs from 'dayjs'
 import service from '../utils/service'
 import pLimit from 'p-limit'
 import storage from '../utils/storage'
+import config from '../utils/config'
 
-const pageSize = 100
 const limit = pLimit(7)
 const dataAll = []
+
+let competitorId = null
+const competitorMap = new Map()
 
 const playerInfo = reactive({})
 const data = reactive([])
@@ -36,7 +38,7 @@ function initPlayerInfo (playerId) {
       playerInfo.avatar = info.profilePicture
       playerInfo.pp = info.pp
       playerInfo.rank = info.rank
-      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / pageSize)
+      totalPage.value = Math.ceil(info.scoreStats.totalPlayCount / config.pageSize)
 
       const playersMap = storage.getMap(storage.keys.players)
       playersMap.set(info.id, {
@@ -48,7 +50,7 @@ function initPlayerInfo (playerId) {
     })
     .catch(e => {
       console.error(e)
-      message.error('用户信息查询失败')
+      message.error('玩家信息查询失败')
       router.push('/')
     })
 }
@@ -69,9 +71,13 @@ async function onSubmit (form) {
 
   console.time('总耗时')
 
-  console.time('查询数据耗时')
+  console.time('查询玩家记录耗时')
   await getData(form)
-  console.timeEnd('查询数据耗时')
+  console.timeEnd('查询玩家记录耗时')
+
+  console.time('查询比较对象记录耗时')
+  await getCompetitorData(form)
+  console.timeEnd('查询比较对象记录耗时')
 
   console.time('处理数据耗时')
   await handleData(form)
@@ -86,6 +92,34 @@ async function onSubmit (form) {
   service.sort(data, sort)
 
   loading.value = false
+}
+
+async function getCompetitorData (form) {
+  const id = form.competitor.id
+
+  if (!form.competitor.enable || !id || id === competitorId) {
+    return
+  }
+
+  competitorMap.clear()
+
+  if (id === playerId) {
+    return
+  }
+
+  competitorId = id
+
+  const totalPage = Math.ceil(form.competitor.totalPlayCount / config.pageSize)
+
+  for (let page = 1; page <= totalPage; page++) {
+    const playerScores = await http.getScores(id, page)
+
+    for (const playerScore of playerScores) {
+      const id = playerScore.leaderboard.id
+      const baseScore = playerScore.score.baseScore
+      competitorMap.set(id, baseScore)
+    }
+  }
 }
 
 async function getData (form) {
@@ -103,39 +137,15 @@ async function getData (form) {
 
 async function getOnePageData (page) {
   try {
-    const playerScores = await http.getScores(playerInfo?.id, page, pageSize)
+    const playerScores = await http.getScores(playerInfo?.id, page)
     for (const playerScore of playerScores) {
-      handlePlayerScore(playerScore)
+      const item = service.playerScoreToItem(playerScore)
+      dataAll.push(item)
     }
   } catch (e) {
     console.error(e)
     message.error('ScoreSaber记录查询异常')
   }
-}
-
-function handlePlayerScore (playerScore) {
-  const score = playerScore.score
-  const leaderboard = playerScore.leaderboard
-  const item = {
-    id: leaderboard.id,
-    rank: score.rank,
-    baseScore: score.baseScore,
-    maxScore: leaderboard.maxScore,
-    pp: score.pp,
-    ppWeighted: score.pp * score.weight,
-    fullCombo: score.fullCombo,
-    timeSet: dayjs(score.timeSet),
-    songHash: leaderboard.songHash,
-    songName: leaderboard.songName,
-    songSubName: leaderboard.songSubName,
-    songAuthorName: leaderboard.songAuthorName,
-    levelAuthorName: leaderboard.levelAuthorName,
-    difficultyRaw: leaderboard.difficulty.difficultyRaw,
-    ranked: leaderboard.ranked,
-    stars: leaderboard.stars,
-    coverImage: leaderboard.coverImage
-  }
-  dataAll.push(item)
 }
 
 async function handleData (form) {
@@ -148,7 +158,7 @@ async function handleData (form) {
 }
 
 async function handleOneItem (item, form) {
-  if (await filter.dataFilter(item, form)) {
+  if (await filter.dataFilter(item, form, competitorMap)) {
     data.push(item)
   }
 }
@@ -162,7 +172,7 @@ async function downloadPlaylist (playlistTitle) {
 <template>
   <a-spin :spinning="playerInfo?.id === undefined" size="large">
     <a-row justify="space-between" align="top" class="main-layout">
-      <a-col :span="7" class="main-layout-sider">
+      <a-col :span="7" class="main-layout-slider">
         <PlayerInfoCard :player-info="playerInfo" />
 
         <FormCard @submit="onSubmit" :loading="loading" />
@@ -180,7 +190,7 @@ async function downloadPlaylist (playlistTitle) {
   height: 100%;
 }
 
-.main-layout-sider {
+.main-layout-slider {
   height: 100%;
   display: grid;
   grid-template-rows: auto 1fr;

@@ -14,6 +14,8 @@ const props = defineProps({
 const key = ref(props.item?.key)
 const mapperId = ref(props.item?.mapperId)
 
+const accDifference = computed(() => props.item.acc - props.item.competitorAcc)
+
 const diffTextMap = new Map([
   ['_Easy_SoloStandard', 'E'],
   ['_Normal_SoloStandard', 'N'],
@@ -139,6 +141,10 @@ function downloadZip () {
 
                 <a-button v-if="item.acc != -Infinity" type="primary" ghost shape="round">
                   <span class="text-bolder">{{ item.acc.toFixed(2) }}%</span>
+                  <span
+                    v-if="item.competitorAcc != undefined"
+                    :class="`acc-difference ${accDifference > 0 ? 'acc-higher' : 'acc-lower'}`"
+                  >{{ `${accDifference > 0 ? '+' : ''}${accDifference.toFixed(2)}%` }}</span>
                 </a-button>
 
                 <a-button
@@ -208,5 +214,19 @@ function downloadZip () {
 .text-bolder {
   font-weight: bolder;
   font-size: 16px;
+}
+
+.acc-difference {
+  font-weight: bolder;
+  margin-left: 12px;
+  color: #52c41a;
+}
+
+.acc-lower {
+  color: #ff4d4f;
+}
+
+.acc-higher {
+  color: #52c41a;
 }
 </style>

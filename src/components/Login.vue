@@ -6,18 +6,22 @@ import storage from '../utils/storage'
 import { message } from 'ant-design-vue'
 import { UserOutlined } from '@ant-design/icons-vue'
 import config from '../utils/config'
+import service from '../utils/service'
 
-const playerId = ref('')
+const playerId = ref()
 const loading = ref(false)
 const router = useRouter()
 
 const playersMap = storage.getMap(storage.keys.players)
 
 function handleLogin () {
+  if (!playerId.value) {
+    return
+  }
+
   loading.value = true
 
-  const matchResult = /scoresaber.com\/u\/(\S+)/.exec(playerId.value)
-  if (matchResult && matchResult[1]) playerId.value = matchResult[1]
+  playerId.value = service.matchPlayerId(playerId.value)
 
   http.getPlayerInfo(playerId.value)
     .then(info => {
