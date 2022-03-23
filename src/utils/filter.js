@@ -60,15 +60,20 @@ function starsFilter (item, form) {
 function pkFilter (item, form, competitorMap) {
   if (!form.competitor.enable || !form.competitor.id) {
     item.competitorAcc = null
+    item.competitorPP = null
     return true
   }
 
-  const competitorScore = competitorMap.get(item.id)
+  const competitor = competitorMap.get(item.id)
+  const competitorScore = competitor?.baseScore
 
   if (!competitorScore) {
     item.competitorAcc = null
+    item.competitorPP = null
     return false
   }
+
+  item.competitorPP = competitor?.pp
 
   item.competitorAcc = (item.acc !== undefined && item.acc > 0) ? competitorScore / item.maxScore * 100 : undefined
 

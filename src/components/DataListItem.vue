@@ -15,6 +15,7 @@ const key = ref(props.item?.key)
 const mapperId = ref(props.item?.mapperId)
 
 const accDifference = computed(() => props.item.acc - props.item.competitorAcc)
+const ppDifference = computed(() => props.item.pp - props.item.competitorPP)
 
 const diffTextMap = new Map([
   ['_Easy_SoloStandard', 'E'],
@@ -142,18 +143,19 @@ function downloadZip () {
                 <a-button v-if="item.acc != -Infinity" type="primary" ghost shape="round">
                   <span class="text-bolder">{{ item.acc.toFixed(2) }}%</span>
                   <span
-                    v-if="item.competitorAcc != null"
-                    :class="`acc-difference ${accDifference > 0 ? 'acc-higher' : 'acc-lower'}`"
-                  >{{ `${accDifference > 0 ? '+' : ''}${accDifference.toFixed(2)}%` }}</span>
+                    v-if="item.competitorAcc != null && accDifference != 0"
+                    :class="`num-difference ${accDifference > 0 ? 'acc-higher' : 'acc-lower'}`"
+                  >&nbsp;{{ `${accDifference > 0 ? '+' : ''}${accDifference.toFixed(2)}%` }}</span>
                 </a-button>
 
-                <a-button
-                  v-if="item.ranked"
-                  type="primary"
-                  ghost
-                  shape="round"
-                  class="text-bolder"
-                >{{ item.pp.toFixed(2) }}pp / {{ item.ppWeighted.toFixed(2) }}pp</a-button>
+                <a-button v-if="item.ranked" type="primary" ghost shape="round">
+                  <span class="text-bolder">{{ item.pp.toFixed(2) }}pp</span>
+                  <span
+                    v-if="item.competitorPP != null && ppDifference != 0"
+                    :class="`num-difference ${ppDifference > 0 ? 'acc-higher' : 'acc-lower'}`"
+                  >&nbsp;{{ `${ppDifference > 0 ? '+' : ''}${ppDifference.toFixed(2)}` }}</span>
+                  <span class="text-bolder">&nbsp;/ {{ item.ppWeighted.toFixed(2) }}pp</span>
+                </a-button>
 
                 <a-tooltip placement="bottom">
                   <template #title>
@@ -216,9 +218,8 @@ function downloadZip () {
   font-size: 16px;
 }
 
-.acc-difference {
+.num-difference {
   font-weight: bolder;
-  margin-left: 12px;
   color: #52c41a;
 }
 

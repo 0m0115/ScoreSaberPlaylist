@@ -115,7 +115,9 @@ async function getCompetitorData (form) {
   const callback = (playerScore) => {
     const id = playerScore.leaderboard.id
     const baseScore = playerScore.score.baseScore
-    competitorMap.set(id, baseScore)
+    const pp = playerScore.score.pp
+
+    competitorMap.set(id, { baseScore, pp })
   }
 
   await getDataAllPage(id, totalPage, callback)
