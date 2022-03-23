@@ -142,7 +142,7 @@ function downloadZip () {
                 <a-button v-if="item.acc != -Infinity" type="primary" ghost shape="round">
                   <span class="text-bolder">{{ item.acc.toFixed(2) }}%</span>
                   <span
-                    v-if="item.competitorAcc != undefined"
+                    v-if="item.competitorAcc != null"
                     :class="`acc-difference ${accDifference > 0 ? 'acc-higher' : 'acc-lower'}`"
                   >{{ `${accDifference > 0 ? '+' : ''}${accDifference.toFixed(2)}%` }}</span>
                 </a-button>

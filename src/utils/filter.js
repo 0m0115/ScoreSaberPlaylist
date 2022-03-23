@@ -59,12 +59,14 @@ function starsFilter (item, form) {
 
 function pkFilter (item, form, competitorMap) {
   if (!form.competitor.enable || !form.competitor.id) {
+    item.competitorAcc = null
     return true
   }
 
   const competitorScore = competitorMap.get(item.id)
 
   if (!competitorScore) {
+    item.competitorAcc = null
     return false
   }
 
