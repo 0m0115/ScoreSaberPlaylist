@@ -74,10 +74,16 @@ async function getAcc (item) {
   return item.baseScore / item.maxScore * 100
 }
 
-async function downloadPlaylist (data, playlistTitle) {
-  const songs = []
+async function downloadPlaylist (data, playlistTitle, num) {
+  num = Math.min(num, data.length)
+  if (!num) {
+    return
+  }
 
-  for (const item of data) {
+  const songs = []
+  for (let index = 0; index < num; index++) {
+    const item = data[index]
+
     const song = {
       songName: item.songName,
       hash: item.songHash,

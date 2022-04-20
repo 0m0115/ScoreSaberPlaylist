@@ -172,10 +172,6 @@ async function handleOneItem (item, form) {
   }
 }
 
-async function downloadPlaylist (playlistTitle) {
-  await service.downloadPlaylist(data, playlistTitle)
-}
-
 </script>
 
 <template>
@@ -188,7 +184,7 @@ async function downloadPlaylist (playlistTitle) {
       </a-col>
 
       <a-col :span="17">
-        <DataList :data="data" :loading="loading" @download="downloadPlaylist" />
+        <DataList :data="data" :loading="loading" />
       </a-col>
     </a-row>
   </a-spin>

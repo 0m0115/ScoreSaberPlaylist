@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineProps, ref } from 'vue'
 import DataListItem from './DataListItem.vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
 import SortSelector from './SortSelector.vue'
@@ -12,8 +12,7 @@ const props = defineProps({
 
 const visible = ref(false)
 const playlistTitle = ref('ScoreSaberPlaylist')
-
-const emits = defineEmits(['download'])
+const num = ref(0)
 
 const pagination = {
   pageSize: 8,
@@ -21,12 +20,13 @@ const pagination = {
   showQuickJumper: true
 }
 
-function download () {
-  emits('download', playlistTitle.value)
+async function download () {
+  await service.downloadPlaylist(props.data, playlistTitle.value, num.value)
   hideModal()
 }
 
 function showModal () {
+  num.value = props.data.length
   visible.value = true
 }
 
@@ -47,13 +47,7 @@ function sort (sort) {
           <a-space size="large">
             <SortSelector :loading="loading" @change="sort" />
 
-            <a-button
-              type="primary"
-              shape="round"
-              size="large"
-              :loading="loading"
-              @click="showModal"
-            >
+            <a-button type="primary" shape="round" size="large" :loading="loading" @click="showModal">
               <template #icon>
                 <DownloadOutlined />
               </template>
@@ -70,7 +64,23 @@ function sort (sort) {
   </a-list>
 
   <a-modal v-model:visible="visible" title="请输入歌单标题">
-    <a-input v-model:value="playlistTitle" placeholder="请输入歌单标题" />
+
+    <div class="model">
+
+      <div>
+        <a-input v-model:value="playlistTitle" placeholder="请输入歌单标题">
+          <template #addonBefore>
+            歌单标题
+          </template>
+        </a-input>
+      </div>
+
+      <div>
+        下载前
+        <a-input-number v-model:value="num" :min="1" :max="props.data.length" :precision="0" />
+        首
+      </div>
+    </div>
 
     <template #footer>
       <a-button key="back" @click="hideModal">取消</a-button>
@@ -82,5 +92,11 @@ function sort (sort) {
 <style scoped>
 .data-list {
   padding: 0 20px 12px 20px;
+}
+
+.model {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-gap: 10px;
 }
 </style>
