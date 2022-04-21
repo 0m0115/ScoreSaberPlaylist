@@ -70,7 +70,7 @@ function pkFilter (item, form, competitorMap) {
   if (!competitorScore) {
     item.competitorAcc = null
     item.competitorPP = null
-    return false
+    return form.competitor.unplayed
   }
 
   item.competitorPP = competitor?.pp

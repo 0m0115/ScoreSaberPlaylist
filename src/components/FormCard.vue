@@ -52,7 +52,8 @@ const form = reactive({
     enable: false,
     id: null,
     type: 'All',
-    totalPage: 0
+    totalPage: 0,
+    unplayed: false
   }
 
 })
@@ -166,43 +167,16 @@ function disabledDate (current) {
 </script>
 
 <template>
-  <a-modal
-    v-model:visible="visible"
-    title="请选择比较对象"
-    :width="600"
-    :footer="null"
-    @cancel="hideModal"
-  >
+  <a-modal v-model:visible="visible" title="请选择比较对象" :width="600" :footer="null" @cancel="hideModal">
     <div class="competitor-modal-content">
-      <a-avatar-group
-        v-if="playersMap.size > 0"
-        :size="64"
-        :maxCount="5"
-        :max-style="avatarMaxStyle"
-      >
-        <a-tooltip
-          v-for="player in playersMap.values()"
-          :key="player.id"
-          placement="top"
-          :title="player.name"
-        >
-          <a-avatar
-            :src="player.avatar"
-            @click="getCompetitorInfo(player.id)"
-            class="cursor-pointer"
-          />
+      <a-avatar-group v-if="playersMap.size > 0" :size="64" :maxCount="5" :max-style="avatarMaxStyle">
+        <a-tooltip v-for="player in playersMap.values()" :key="player.id" placement="top" :title="player.name">
+          <a-avatar :src="player.avatar" @click="getCompetitorInfo(player.id)" class="cursor-pointer" />
         </a-tooltip>
       </a-avatar-group>
 
-      <a-input-search
-        v-model:value="competitorIdInput"
-        placeholder="请输入Score Saber账号或Score Saber主页网址"
-        enter-button="确定"
-        size="large"
-        allow-clear
-        :loading="competitorLoading"
-        @search="submitCompetitorId"
-      >
+      <a-input-search v-model:value="competitorIdInput" placeholder="请输入Score Saber账号或Score Saber主页网址" enter-button="确定"
+        size="large" allow-clear :loading="competitorLoading" @search="submitCompetitorId">
         <template #prefix>
           <UserOutlined />
         </template>
@@ -228,24 +202,16 @@ function disabledDate (current) {
         </a-space>
       </a-card>
 
-      <a-card title="PK" hoverable :headStyle="headStyle" class="form-card-item">
+      <a-card title="玩家比较" hoverable :headStyle="headStyle" class="form-card-item">
         <template #extra>
           <a-switch v-model:checked="form.competitor.enable" />
         </template>
 
         <a-space>
           与
-          <a-tooltip
-            v-if="form.competitor.enable && competitorInfo.id != undefined"
-            placement="bottom"
-            :title="competitorInfo.name"
-          >
-            <a-avatar
-              :size="64"
-              :src="competitorInfo.avatar"
-              class="cursor-pointer"
-              @click="showModal"
-            />
+          <a-tooltip v-if="form.competitor.enable && competitorInfo.id != undefined" placement="bottom"
+            :title="competitorInfo.name">
+            <a-avatar :size="64" :src="competitorInfo.avatar" class="cursor-pointer" @click="showModal" />
           </a-tooltip>
           <a-tooltip v-else placement="bottom" title="请选择比较对象">
             <a-avatar :size="64" class="cursor-pointer" @click="showModal">
@@ -254,13 +220,10 @@ function disabledDate (current) {
               </template>
             </a-avatar>
           </a-tooltip>相比
-          <a-select
-            ref="select"
-            size="small"
-            v-model:value="form.competitor.type"
-            style="width: 120px"
-            :options="pkTypeOptions"
-          />
+          <a-select ref="select" size="small" v-model:value="form.competitor.type" style="width: 120px"
+            :options="pkTypeOptions" />
+
+          <a-checkbox v-model:checked="form.competitor.unplayed">包含其未玩过谱面</a-checkbox>
         </a-space>
       </a-card>
 
@@ -268,42 +231,24 @@ function disabledDate (current) {
         <template #extra>
           <a-switch v-model:checked="form.date.enable" />
         </template>
-        <a-range-picker
-          v-model:value="form.date.value"
-          :disabled-date="disabledDate"
-          :disabled="!form.date.enable"
-          :locale="locale"
-        />
+        <a-range-picker v-model:value="form.date.value" :disabled-date="disabledDate" :disabled="!form.date.enable"
+          :locale="locale" />
       </a-card>
 
       <a-card title="ACC" hoverable :headStyle="headStyle" class="form-card-item">
         <template #extra>
           <a-switch v-model:checked="form.acc.enable" />
         </template>
-        <a-slider
-          v-model:value="form.acc.value"
-          range
-          :min="65"
-          :disabled="!form.acc.enable"
-          :tip-formatter="(value) => `${value}%`"
-          :marks="accMarks"
-        />
+        <a-slider v-model:value="form.acc.value" range :min="65" :disabled="!form.acc.enable"
+          :tip-formatter="(value) => `${value}%`" :marks="accMarks" />
       </a-card>
 
       <a-card title="排名" hoverable :headStyle="headStyle" class="form-card-item">
         <template #extra>
           <a-switch v-model:checked="form.rank.enable" />
         </template>
-        <a-slider
-          v-model:value="form.rank.value"
-          range
-          :min="0"
-          :max="300"
-          :step="10"
-          :disabled="!form.rank.enable"
-          :tip-formatter="(value) => value === 300 ? '300+' : value"
-          :marks="rankMarks"
-        />
+        <a-slider v-model:value="form.rank.value" range :min="0" :max="300" :step="10" :disabled="!form.rank.enable"
+          :tip-formatter="(value) => value === 300 ? '300+' : value" :marks="rankMarks" />
       </a-card>
 
       <div v-show="form.rankedType != 'UnRanked'">
@@ -311,29 +256,15 @@ function disabledDate (current) {
           <template #extra>
             <a-switch v-model:checked="form.pp.enable" />
           </template>
-          <a-slider
-            v-model:value="form.pp.value"
-            range
-            :min="0"
-            :max="600"
-            :step="10"
-            :disabled="!form.pp.enable"
-            :tip-formatter="(value) => value === 600 ? '600+' : value"
-            :marks="ppMarks"
-          />
+          <a-slider v-model:value="form.pp.value" range :min="0" :max="600" :step="10" :disabled="!form.pp.enable"
+            :tip-formatter="(value) => value === 600 ? '600+' : value" :marks="ppMarks" />
         </a-card>
 
         <a-card title="星级" hoverable :headStyle="headStyle" class="form-card-item">
           <template #extra>
             <a-switch v-model:checked="form.stars.enable" />
           </template>
-          <a-slider
-            v-model:value="form.stars.value"
-            range
-            :min="0"
-            :max="14"
-            :disabled="!form.stars.enable"
-          />
+          <a-slider v-model:value="form.stars.value" range :min="0" :max="14" :disabled="!form.stars.enable" />
         </a-card>
       </div>
 
