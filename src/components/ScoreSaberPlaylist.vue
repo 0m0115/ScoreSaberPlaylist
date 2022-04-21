@@ -184,7 +184,7 @@ async function handleOneItem (item, form) {
       </a-col>
 
       <a-col :span="17">
-        <DataList :data="data" :loading="loading" />
+        <DataList :data="data" :playerInfo="playerInfo" :loading="loading" />
       </a-col>
     </a-row>
   </a-spin>

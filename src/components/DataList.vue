@@ -7,6 +7,7 @@ import service from '../utils/service'
 
 const props = defineProps({
   data: Object,
+  playerInfo: Object,
   loading: Boolean
 })
 
@@ -21,11 +22,12 @@ const pagination = {
 }
 
 async function download () {
-  await service.downloadPlaylist(props.data, playlistTitle.value, num.value)
+  await service.downloadPlaylist(props.data, props.playerInfo.avatar, playlistTitle.value, num.value)
   hideModal()
 }
 
 function showModal () {
+  playlistTitle.value = `ScoreSaberPlaylist-${props.playerInfo.name}`
   num.value = props.data.length
   visible.value = true
 }
